@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking - Mood Travel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-globe-americas me-2"></i>Mood Travel</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="/reviews"><i class="fas fa-star me-1"></i>Reviews</a>
+                <a class="nav-link" href="/bus_tours"><i class="fas fa-bus me-1"></i>Bus Tours</a>
+                <a class="nav-link" href="/packing"><i class="fas fa-suitcase me-1"></i>Packing</a>
+                <a class="nav-link" href="#" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3"><i class="fas fa-plane me-3"></i>Flight Booking</h1>
+            <p class="lead mb-4">Search and book flights with detailed information</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <!-- Flight Search -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4><i class="fas fa-search me-2"></i>Search Flights</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">From</label>
+                                <select id="fromCity" class="form-select">
+                                    <option value="">Select departure city...</option>
+                                    <option value="DEL">Delhi (DEL)</option>
+                                    <option value="BOM">Mumbai (BOM)</option>
+                                    <option value="BLR">Bangalore (BLR)</option>
+                                    <option value="MAA">Chennai (MAA)</option>
+                                    <option value="HYD">Hyderabad (HYD)</option>
+                                    <option value="CCU">Kolkata (CCU)</option>
+                                    <option value="NYC">New York (NYC)</option>
+                                    <option value="LAX">Los Angeles (LAX)</option>
+                                    <option value="SFO">San Francisco (SFO)</option>
+                                    <option value="ORD">Chicago (ORD)</option>
+                                    <option value="LON">London (LHR)</option>
+                                    <option value="PAR">Paris (CDG)</option>
+                                    <option value="AMS">Amsterdam (AMS)</option>
+                                    <option value="FRA">Frankfurt (FRA)</option>
+                                    <option value="DXB">Dubai (DXB)</option>
+                                    <option value="DOH">Doha (DOH)</option>
+                                    <option value="SIN">Singapore (SIN)</option>
+                                    <option value="HKG">Hong Kong (HKG)</option>
+                                    <option value="NRT">Tokyo (NRT)</option>
+                                    <option value="SYD">Sydney (SYD)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">To</label>
+                                <select id="toCity" class="form-select">
+                                    <option value="">Select arrival city...</option>
+                                    <option value="DEL">Delhi (DEL)</option>
+                                    <option value="BOM">Mumbai (BOM)</option>
+                                    <option value="BLR">Bangalore (BLR)</option>
+                                    <option value="MAA">Chennai (MAA)</option>
+                                    <option value="HYD">Hyderabad (HYD)</option>
+                                    <option value="CCU">Kolkata (CCU)</option>
+                                    <option value="NYC">New York (NYC)</option>
+                                    <option value="LAX">Los Angeles (LAX)</option>
+                                    <option value="SFO">San Francisco (SFO)</option>
+                                    <option value="ORD">Chicago (ORD)</option>
+                                    <option value="LON">London (LHR)</option>
+                                    <option value="PAR">Paris (CDG)</option>
+                                    <option value="AMS">Amsterdam (AMS)</option>
+                                    <option value="FRA">Frankfurt (FRA)</option>
+                                    <option value="DXB">Dubai (DXB)</option>
+                                    <option value="DOH">Doha (DOH)</option>
+                                    <option value="SIN">Singapore (SIN)</option>
+                                    <option value="HKG">Hong Kong (HKG)</option>
+                                    <option value="NRT">Tokyo (NRT)</option>
+                                    <option value="SYD">Sydney (SYD)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Departure</label>
+                                <input type="date" id="departDate" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Return</label>
+                                <input type="date" id="returnDate" class="form-control">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Passengers</label>
+                                <input type="number" id="passengers" class="form-control" min="1" max="9" value="1">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button class="btn btn-primary" onclick="searchFlights()">
+                                    <i class="fas fa-search me-1"></i>Search Flights
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flight Results -->
+        <div id="flightWarning"></div>
+        <div id="flightResultsContainer">
+            <div class="text-center py-5">
+                <i class="fas fa-plane fa-3x text-muted mb-3"></i>
+                <h4>Search for flights to get started</h4>
+                <p class="text-muted">Enter your travel details to find available flights</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        let currentFlights = [];
+        const warningBanner = document.getElementById('flightWarning');
+
+        // Set default dates
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            
+            document.getElementById('departDate').value = tomorrow.toISOString().split('T')[0];
+            document.getElementById('returnDate').value = nextWeek.toISOString().split('T')[0];
+        });
+
+        async function searchFlights() {
+            const fromCity = document.getElementById('fromCity').value;
+            const toCity = document.getElementById('toCity').value;
+            const departDate = document.getElementById('departDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const passengers = parseInt(document.getElementById('passengers').value);
+
+            if (!fromCity || !toCity || !departDate || !returnDate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                clearWarning();
+                const response = await fetch('/api/flights/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from_city: fromCity,
+                        to_city: toCity,
+                        depart_date: departDate,
+                        return_date: returnDate,
+                        passengers: passengers
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayFlightResults(data.flights, data.search_params);
+                    if (data.warning) {
+                        showWarning(data.warning);
+                    }
+                } else {
+                    showError(data.error || 'Failed to search flights');
+                }
+            } catch (error) {
+                console.error('Error searching flights:', error);
+                showError(error.message || 'An error occurred while searching flights');
+            }
+        }
+
+        function displayFlightResults(flights, searchParams) {
+            clearWarning();
+            const flightsWithMeta = flights.map(flight => ({
+                ...flight,
+                passengers: searchParams.passengers,
+                currency: flight.currency || searchParams.currency || 'USD',
+                source: flight.source || 'live'
+            }));
+            currentFlights = flightsWithMeta;
+            const container = document.getElementById('flightResultsContainer');
+            
+            if (flights.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-plane fa-3x text-muted mb-3"></i>
+                        <h4>No flights found</h4>
+                        <p class="text-muted">Try different dates or routes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h4><i class="fas fa-plane me-2"></i>Flight Results</h4>
+                                <p class="mb-0">${searchParams.from} → ${searchParams.to} | ${searchParams.depart_date} to ${searchParams.return_date || '—'} | ${searchParams.passengers} passenger(s)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    ${flightsWithMeta.map((flight, idx) => {
+                        const priceText = flight.price_display || (flight.currency ? `${flight.currency} ${flight.price}` : (flight.price ? `$${flight.price}` : '—'));
+                        const seatsText = flight.available_seats ? `${flight.available_seats} seats est.` : (flight.status || '—');
+                        const segmentLabel = flight.segment === 'return' ? '<span class="badge bg-secondary">Return</span>' : '<span class="badge bg-info text-dark">Outbound</span>';
+                        return `
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-2">
+                                            <div class="text-center">
+                                                <div class="h4 mb-1">${flight.airline_logo || '✈️'}</div>
+                                                <small class="text-muted d-block">${flight.airline}</small>
+                                                ${segmentLabel}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <div class="h5 mb-1">${flight.departure_time}</div>
+                                                <small class="text-muted">${flight.departure_airport}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="text-center">
+                                                <div class="text-muted">${flight.duration || '—'}</div>
+                                                <div class="small text-muted text-uppercase">${flight.flight_type || ''}</div>
+                                                <div class="small"><span class="badge bg-light text-dark">${flight.status || 'scheduled'}</span></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-center">
+                                                <div class="h5 mb-1">${flight.arrival_time}</div>
+                                                <small class="text-muted">${flight.arrival_airport}</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="text-center">
+                                                <div class="text-success h5"><strong>${priceText}</strong></div>
+                                                <small class="text-muted">${seatsText}</small>
+                                                <div class="d-grid gap-2 mt-2">
+                                                    <button class="btn btn-primary btn-sm" onclick="showFlightDetails('${flight.id}')">
+                                                        <i class="fas fa-info-circle me-1"></i>Details
+                                                    </button>
+                                                    <button class="btn btn-success btn-sm" onclick="bookFlight('${flight.id}', ${idx})">
+                                                        <i class="fas fa-ticket-alt me-1"></i>Book
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        }
+
+        async function showFlightDetails(flightId) {
+            const cached = currentFlights.find(f => f.id === flightId);
+            if (cached && cached.source !== 'live') {
+                const summary = [
+                    `Flight: ${cached.flight_number}`,
+                    `Airline: ${cached.airline}`,
+                    `Route: ${cached.departure_airport} ➜ ${cached.arrival_airport}`,
+                    `Departure: ${cached.departure_date} ${cached.departure_time}`,
+                    `Arrival: ${cached.arrival_time}`,
+                    `Duration: ${cached.duration}`,
+                    `Status: Sample schedule`,
+                    `Baggage: ${cached.baggage || '20kg check-in + 7kg cabin'}`,
+                    `Fare: ${cached.price_display || (cached.currency ? cached.currency + ' ' + cached.price : '-')}`
+                ].join('\n');
+                alert(summary);
+                return;
+            }
+            try {
+                const response = await fetch(`/api/flights/details/${flightId}`);
+                const flightDetails = await response.json();
+
+                if (response.ok) {
+                    alert(`Flight Details for ${flightId}:\nAirline: ${flightDetails.airline_info.name}\nDeparture: ${flightDetails.departure.airport} (${flightDetails.departure.iata})\nArrival: ${flightDetails.arrival.airport} (${flightDetails.arrival.iata})\nStatus: ${flightDetails.status}`);
+                } else {
+                    showError('Failed to get flight details');
+                }
+            } catch (error) {
+                console.error('Error getting flight details:', error);
+                showError('An error occurred while getting flight details');
+            }
+        }
+
+        async function bookFlight(flightId, flightIndex) {
+            const flightData = currentFlights[flightIndex];
+            if (!flightData) {
+                showError('Flight data no longer available. Please search again.');
+                return;
+            }
+            const passengerName = prompt('Enter passenger name', 'Guest Traveller');
+            if (!passengerName) {
+                return;
+            }
+            try {
+                const response = await fetch(`/api/flights/book/${flightId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        passengers: flightData.passengers || 1,
+                        currency: flightData.currency || 'USD',
+                        passenger_details: [{ name: passengerName }],
+                        contact_info: { email: 'guest@example.com', phone: '', special_requests: '' },
+                        flight_source: flightData.source || 'live',
+                        flight_snapshot: flightData
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert(`Booking confirmed! Reference: ${data.booking.booking_id}`);
+                } else {
+                    showError(data.error || 'Failed to book flight');
+                }
+            } catch (error) {
+                console.error('Error booking flight:', error);
+                showError('An error occurred while booking the flight');
+            }
+        }
+
+        function showWarning(message) {
+            warningBanner.innerHTML = `
+                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>${message}
+                    <button type="button" class="btn-close" onclick="clearWarning()" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        function clearWarning() {
+            warningBanner.innerHTML = '';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('flightResultsContainer');
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                </div>
+            `;
+            if (!warningBanner.innerHTML) {
+                showWarning('We switched to curated sample flights while the live provider recovers.');
+            }
+        }
+    </script>
+</body>
+</html>
+
+

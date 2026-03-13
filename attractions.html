@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ destination.name }} - Attractions - Mood Travel</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('{{ destination.images[0] if destination.images else "https://via.placeholder.com/1200x400" }}');
+            background-size: cover;
+            background-position: center;
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        
+        .attraction-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .attraction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .category-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+        }
+        
+        .food-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+        
+        .hiking-card {
+            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
+            color: white;
+        }
+        
+        .cultural-card {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+            color: white;
+        }
+        
+        .shopping-card {
+            background: linear-gradient(135deg, #a55eea 0%, #8854d0 100%);
+            color: white;
+        }
+        
+        .rating-stars {
+            color: #ffd700;
+        }
+        
+        .price-tag {
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .time-badge {
+            background: #17a2b8;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-brain me-2"></i>Mood Travel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/destination/{{ destination.id }}">{{ destination.name }}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Attractions in {{ destination.name }}</h1>
+                    <p class="lead mb-4">Discover the best places to visit, hike, eat, and shop in {{ destination.city }}, {{ destination.country }}</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="badge bg-light text-dark fs-6">🏛️ Cultural Sites</span>
+                        <span class="badge bg-light text-dark fs-6">🥾 Hiking Trails</span>
+                        <span class="badge bg-light text-dark fs-6">🍽️ Local Food</span>
+                        <span class="badge bg-light text-dark fs-6">🛍️ Shopping</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Section -->
+    <section class="py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <button class="btn btn-outline-primary active" onclick="filterAttractions('all')">
+                            <i class="fas fa-th me-2"></i>All Attractions
+                        </button>
+                        <button class="btn btn-outline-success" onclick="filterAttractions('hiking')">
+                            <i class="fas fa-mountain me-2"></i>Hiking & Nature
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="filterAttractions('food')">
+                            <i class="fas fa-utensils me-2"></i>Food & Dining
+                        </button>
+                        <button class="btn btn-outline-warning" onclick="filterAttractions('cultural')">
+                            <i class="fas fa-landmark me-2"></i>Cultural Sites
+                        </button>
+                        <button class="btn btn-outline-info" onclick="filterAttractions('shopping')">
+                            <i class="fas fa-shopping-bag me-2"></i>Shopping
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Attractions Grid -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4" id="attractionsGrid">
+                <!-- Attractions will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Famous Food Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">🍽️ Famous Local Food</h2>
+                <p class="lead text-muted">Taste the authentic flavors of {{ destination.name }}</p>
+            </div>
+            <div class="row g-4" id="foodGrid">
+                <!-- Food items will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Hiking Trails Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">🥾 Hiking & Adventure</h2>
+                <p class="lead text-muted">Explore the natural beauty of {{ destination.name }}</p>
+            </div>
+            <div class="row g-4" id="hikingGrid">
+                <!-- Hiking trails will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Shopping & Souvenirs Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-5 fw-bold">🛍️ Shopping & Souvenirs</h2>
+                <p class="lead text-muted">Take home a piece of {{ destination.name }}</p>
+            </div>
+            <div class="row g-4" id="shoppingGrid">
+                <!-- Shopping items will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-brain me-2"></i>Mood Travel</h5>
+                    <p class="text-muted">AI-powered travel recommendations based on your mood and preferences.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 Mood Travel. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        const destinationId = {{ destination.id }};
+        let allAttractions = [];
+        let currentFilter = 'all';
+
+        // Load attractions on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAttractions();
+            loadFamousFood();
+            loadHikingTrails();
+            loadShoppingItems();
+        });
+
+        async function loadAttractions() {
+            try {
+                const response = await fetch(`/api/attractions/${destinationId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    allAttractions = data.attractions;
+                    displayAttractions(allAttractions);
+                } else {
+                    document.getElementById('attractionsGrid').innerHTML = 
+                        '<div class="col-12 text-center"><p>No attractions available yet.</p></div>';
+                }
+            } catch (error) {
+                console.error('Error loading attractions:', error);
+            }
+        }
+
+        function displayAttractions(attractions) {
+            const grid = document.getElementById('attractionsGrid');
+            let html = '';
+            
+            attractions.forEach(attraction => {
+                const categoryClass = getCategoryClass(attraction.type);
+                const imageUrl = attraction.image_url || attraction.image || 'https://source.unsplash.com/800x600/?attraction,travel';
+                html += `
+                    <div class="col-lg-4 col-md-6 attraction-item" data-category="${attraction.type.toLowerCase()}">
+                        <div class="card attraction-card ${categoryClass}">
+                            <div class="position-relative">
+                                <img src="${imageUrl}" class="card-img-top" alt="${attraction.name}" style="height: 200px; object-fit: cover;" onerror="this.src='https://source.unsplash.com/800x600/?attraction,travel'">
+                                <span class="category-badge badge bg-primary">${attraction.type}</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${attraction.name}</h5>
+                                <p class="card-text">${attraction.description}</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="rating-stars">
+                                        ${'★'.repeat(Math.floor(attraction.rating))}${'☆'.repeat(5-Math.floor(attraction.rating))}
+                                        <span class="ms-1">${attraction.rating}</span>
+                                    </div>
+                                    <span class="price-tag">${attraction.price}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="time-badge">
+                                        <i class="fas fa-clock me-1"></i>${attraction.hours}
+                                    </span>
+                                    <small class="text-muted">${attraction.best_time}</small>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lightbulb me-1"></i>${attraction.tips}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+        }
+
+        function getCategoryClass(type) {
+            switch(type.toLowerCase()) {
+                case 'food': return 'food-card';
+                case 'hiking': return 'hiking-card';
+                case 'cultural': return 'cultural-card';
+                case 'shopping': return 'shopping-card';
+                default: return '';
+            }
+        }
+
+        function filterAttractions(category) {
+            currentFilter = category;
+            
+            // Update button states
+            document.querySelectorAll('.btn-outline-primary, .btn-outline-success, .btn-outline-danger, .btn-outline-warning, .btn-outline-info').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter attractions
+            const filtered = category === 'all' ? allAttractions : 
+                           allAttractions.filter(attraction => 
+                               attraction.type.toLowerCase() === category
+                           );
+            
+            displayAttractions(filtered);
+        }
+
+        // Load famous food items
+        async function loadFamousFood() {
+            try {
+                const response = await fetch(`/api/food/${destinationId}`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to load food');
+                const foodItems = Array.isArray(data.famous_local_food) ? data.famous_local_food : [];
+
+                const grid = document.getElementById('foodGrid');
+                let html = '';
+                foodItems.slice(0, 12).forEach(food => {
+                    const rating = food.rating || 4.5;
+                    const imageUrl = food.image_url || food.image || 'https://source.unsplash.com/400x300/?food,cuisine';
+                    html += `
+                        <div class="col-lg-6 col-md-6">
+                            <div class="card food-card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="${imageUrl}" class="img-fluid rounded-start h-100" alt="${food.name}" style="object-fit: cover;" onerror="this.src='https://source.unsplash.com/400x300/?food,cuisine'">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${food.name}</h5>
+                                            <p class="card-text">${food.description || ''}</p>
+                                            ${food.ingredients ? `<div class='mb-2'>${food.ingredients.map(i => `<span class='badge bg-light text-dark me-1 mb-1'>${i}</span>`).join('')}</div>` : ''}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="price-tag">${food.price || ''}</span>
+                                                <div class="rating-stars">${'★'.repeat(Math.floor(rating))}${'☆'.repeat(5-Math.floor(rating))}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                grid.innerHTML = html || '<div class="col-12 text-center text-muted">No local food found</div>';
+            } catch (e) {
+                document.getElementById('foodGrid').innerHTML = '<div class="col-12 text-center text-danger">Failed to load food</div>';
+            }
+        }
+
+        // Load hiking trails
+        async function loadHikingTrails() {
+            try {
+                const response = await fetch(`/api/hiking/${destinationId}`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to load hiking');
+                const trails = Array.isArray(data.hiking_adventures) ? data.hiking_adventures : [];
+
+                const grid = document.getElementById('hikingGrid');
+                let html = '';
+                trails.slice(0, 12).forEach(trail => {
+                    const difficulty = (trail.difficulty || '').toLowerCase();
+                    const difficultyClass = difficulty === 'hard' ? 'bg-danger' : difficulty === 'moderate' ? 'bg-warning' : 'bg-success';
+                    const imageUrl = trail.image_url || trail.image || 'https://source.unsplash.com/800x600/?hiking,nature';
+                    html += `
+                        <div class="col-lg-6 col-md-6">
+                            <div class="card hiking-card h-100">
+                                <img src="${imageUrl}" class="card-img-top" alt="${trail.name}" style="height: 200px; object-fit: cover;" onerror="this.src='https://source.unsplash.com/800x600/?hiking,nature'">
+                                <div class="card-body">
+                                    <h5 class="card-title">${trail.name}</h5>
+                                    <p class="card-text">${trail.description || ''}</p>
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <span class="badge ${difficultyClass}">${trail.difficulty || 'Easy'}</span>
+                                        </div>
+                                        <div class="col-4">
+                                            <small><i class="fas fa-clock me-1"></i>${trail.duration || ''}</small>
+                                        </div>
+                                        <div class="col-4">
+                                            <small><i class="fas fa-route me-1"></i>${trail.distance || ''}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                grid.innerHTML = html || '<div class="col-12 text-center text-muted">No hiking trails found</div>';
+            } catch (e) {
+                document.getElementById('hikingGrid').innerHTML = '<div class="col-12 text-center text-danger">Failed to load hiking</div>';
+            }
+        }
+
+        // Load shopping items (shopping places + souvenirs)
+        async function loadShoppingItems() {
+            try {
+                const [shoppingRes, souvenirsRes] = await Promise.all([
+                    fetch(`/api/shopping/${destinationId}`),
+                    fetch(`/api/souvenirs/${destinationId}`)
+                ]);
+                const [shoppingData, souvenirsData] = await Promise.all([
+                    shoppingRes.json(),
+                    souvenirsRes.json()
+                ]);
+                const shoppingPlaces = Array.isArray(shoppingData.shopping_places) ? shoppingData.shopping_places : [];
+                const souvenirItems = Array.isArray(souvenirsData.souvenirs) ? souvenirsData.souvenirs : [];
+
+                const grid = document.getElementById('shoppingGrid');
+                let html = '';
+
+                // Shopping places
+                shoppingPlaces.slice(0, 12).forEach(place => {
+                    const rating = place.rating || 4.4;
+                    const imageUrl = place.image_url || place.image || 'https://source.unsplash.com/400x300/?shopping,market';
+                    html += `
+                        <div class="col-lg-6 col-md-6">
+                            <div class="card shopping-card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="${imageUrl}" class="img-fluid rounded-start h-100" alt="${place.name}" style="object-fit: cover;" onerror="this.src='https://source.unsplash.com/400x300/?shopping,market'">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${place.name}</h5>
+                                            <p class="card-text">${place.description || ''}</p>
+                                            ${place.best_items ? `<div class='mb-2'>${place.best_items.map(i => `<span class='badge bg-light text-dark me-1 mb-1'>${i}</span>`).join('')}</div>` : ''}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge bg-dark">${place.price_range || ''}</span>
+                                                <div class="rating-stars">${'★'.repeat(Math.floor(rating))}${'☆'.repeat(5-Math.floor(rating))}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                // Souvenirs
+                souvenirItems.slice(0, 12).forEach(item => {
+                    const imageUrl = item.image_url || item.image || 'https://source.unsplash.com/400x300/?souvenir,craft';
+                    html += `
+                        <div class="col-lg-6 col-md-6">
+                            <div class="card shopping-card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="${imageUrl}" class="img-fluid rounded-start h-100" alt="${item.name}" style="object-fit: cover;" onerror="this.src='https://source.unsplash.com/400x300/?souvenir,craft'">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${item.name}</h5>
+                                            <p class="card-text">${item.description || ''}</p>
+                                            ${item.best_places ? `<div class='mb-2'>${item.best_places.map(p => `<span class='badge bg-light text-dark me-1 mb-1'>${p}</span>`).join('')}</div>` : ''}
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="price-tag">${item.price || ''}</span>
+                                                <span class="badge bg-secondary">${item.type || ''}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+
+                grid.innerHTML = html || '<div class="col-12 text-center text-muted">No shopping or souvenirs found</div>';
+            } catch (e) {
+                document.getElementById('shoppingGrid').innerHTML = '<div class="col-12 text-center text-danger">Failed to load shopping and souvenirs</div>';
+            }
+        }
+    </script>
+</body>
+</html> 
+ 

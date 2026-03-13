@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews & Travel Planning - Mood Travel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .rating-bar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .rating-fill {
+            background: linear-gradient(90deg, #ffc107, #ff6b35);
+            height: 20px;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .review-card {
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .star-rating {
+            color: #ffc107;
+            font-size: 18px;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .flight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .budget-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-globe-americas me-2"></i>Mood Travel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="#" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-star me-3"></i>Reviews & Travel Planning
+            </h1>
+            <p class="lead mb-4">See what travelers are saying and plan your next adventure</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                    <i class="fas fa-star me-2"></i>Reviews & Ratings
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="budget-tab" data-bs-toggle="tab" data-bs-target="#budget" type="button" role="tab">
+                    <i class="fas fa-dollar-sign me-2"></i>Budget Guide
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="mainTabsContent">
+            <!-- Reviews Tab -->
+            <div class="tab-pane fade show active" id="reviews" role="tabpanel">
+                <!-- Overall Statistics -->
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="stats-card">
+                            <h3><i class="fas fa-chart-bar me-2"></i>Overall Statistics</h3>
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    <h4 id="totalReviews">0</h4>
+                                    <p>Total Reviews</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h4 id="averageRating">0.0</h4>
+                                    <p>Average Rating</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h4 id="totalDestinations">0</h4>
+                                    <p>Destinations</p>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h4 id="verifiedTravelers">0</h4>
+                                    <p>Verified Travelers</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Distribution Chart -->
+                <div class="row mb-5">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-pie me-2"></i>Rating Distribution</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="ratingChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-star me-2"></i>Rating Breakdown</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="ratingBreakdown">
+                                    <!-- Rating bars will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3><i class="fas fa-comments me-2"></i>Traveler Reviews</h3>
+                            <button class="btn btn-primary" onclick="showAddReviewModal()">
+                                <i class="fas fa-plus me-2"></i>Write a Review
+                            </button>
+                        </div>
+                        <div id="reviewsContainer">
+                            <!-- Reviews will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Budget Tab -->
+            <div class="tab-pane fade" id="budget" role="tabpanel">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-dollar-sign me-2"></i>Country Budget Guide</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label for="budgetCountry" class="form-label">Select Country</label>
+                                        <select class="form-select" id="budgetCountry">
+                                            <option value="">Choose a country</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="budgetDuration" class="form-label">Duration (days)</label>
+                                        <select class="form-select" id="budgetDuration">
+                                            <option value="3">3 days</option>
+                                            <option value="7" selected>7 days</option>
+                                            <option value="14">14 days</option>
+                                            <option value="30">30 days</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="budgetType" class="form-label">Travel Style</label>
+                                        <select class="form-select" id="budgetType">
+                                            <option value="budget">Budget</option>
+                                            <option value="mid" selected>Mid-range</option>
+                                            <option value="luxury">Luxury</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <button class="btn btn-primary" onclick="calculateBudget()">
+                                            <i class="fas fa-calculator me-2"></i>Calculate Budget
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div id="budgetResults">
+                            <!-- Budget results will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Review Modal -->
+    <div class="modal fade" id="addReviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Write a Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reviewForm">
+                        <div class="mb-3">
+                            <label for="reviewDestination" class="form-label">Destination</label>
+                            <select class="form-select" id="reviewDestination" required>
+                                <option value="">Select a destination</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rating</label>
+                            <div class="star-rating-input">
+                                <i class="fas fa-star star-input" data-rating="1"></i>
+                                <i class="fas fa-star star-input" data-rating="2"></i>
+                                <i class="fas fa-star star-input" data-rating="3"></i>
+                                <i class="fas fa-star star-input" data-rating="4"></i>
+                                <i class="fas fa-star star-input" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="selectedRating" value="5">
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label">Your Review</label>
+                            <textarea class="form-control" id="reviewComment" rows="4" placeholder="Share your experience..." required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewerName" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="reviewerName" placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewerEmail" class="form-label">Email (optional)</label>
+                            <input type="email" class="form-control" id="reviewerEmail" placeholder="Enter your email">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentReviews = [];
+        let ratingChart = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReviewsAnalytics();
+            loadDestinations();
+            loadCountries();
+            setupEventListeners();
+            setupFlightSearch();
+        });
+
+        function setupEventListeners() {
+            // Star rating input
+            document.querySelectorAll('.star-input').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = this.dataset.rating;
+                    setStarRating(rating);
+                });
+            });
+
+            // Budget country change
+            document.getElementById('budgetCountry').addEventListener('change', function() {
+                if (this.value) {
+                    calculateBudget();
+                }
+            });
+
+            document.getElementById('budgetDuration').addEventListener('change', calculateBudget);
+            document.getElementById('budgetType').addEventListener('change', calculateBudget);
+        }
+
+        async function loadReviewsAnalytics() {
+            try {
+                const response = await fetch('/api/reviews/analytics');
+                const data = await response.json();
+                
+                updateOverallStatistics(data.overall_statistics);
+                createRatingChart(data.overall_statistics);
+                updateRatingBreakdown(data.overall_statistics);
+                
+                // Load all reviews
+                await loadAllReviews();
+            } catch (error) {
+                console.error('Error loading reviews analytics:', error);
+            }
+        }
+
+        async function loadAllReviews() {
+            try {
+                const response = await fetch('/api/reviews/analytics');
+                const data = await response.json();
+                
+                currentReviews = [];
+                for (const [destId, reviews] of Object.entries(data.destination_statistics)) {
+                    const reviewsResponse = await fetch(`/api/reviews/${reviews.destination_id}`);
+                    const reviewsData = await reviewsResponse.json();
+                    currentReviews.push(...reviewsData.reviews);
+                }
+                
+                displayReviews(currentReviews);
+            } catch (error) {
+                console.error('Error loading all reviews:', error);
+            }
+        }
+
+        function updateOverallStatistics(stats) {
+            document.getElementById('totalReviews').textContent = stats.total_reviews;
+            document.getElementById('averageRating').textContent = stats.average_rating;
+            document.getElementById('totalDestinations').textContent = Object.keys(stats.destination_statistics || {}).length;
+            document.getElementById('verifiedTravelers').textContent = currentReviews.filter(r => r.verified_traveler).length;
+        }
+
+        function createRatingChart(stats) {
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            
+            if (ratingChart) {
+                ratingChart.destroy();
+            }
+            
+            ratingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+                    datasets: [{
+                        label: 'Number of Reviews',
+                        data: [
+                            stats.rating_distribution[1] || 0,
+                            stats.rating_distribution[2] || 0,
+                            stats.rating_distribution[3] || 0,
+                            stats.rating_distribution[4] || 0,
+                            stats.rating_distribution[5] || 0
+                        ],
+                        backgroundColor: [
+                            '#dc3545',
+                            '#fd7e14',
+                            '#ffc107',
+                            '#20c997',
+                            '#198754'
+                        ],
+                        borderColor: [
+                            '#dc3545',
+                            '#fd7e14',
+                            '#ffc107',
+                            '#20c997',
+                            '#198754'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRatingBreakdown(stats) {
+            const container = document.getElementById('ratingBreakdown');
+            container.innerHTML = '';
+            
+            for (let i = 5; i >= 1; i--) {
+                const count = stats.rating_distribution[i] || 0;
+                const percentage = stats.percentage_distribution[i] || 0;
+                
+                const barHtml = `
+                    <div class="rating-bar">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>${i} <i class="fas fa-star text-warning"></i></span>
+                            <span>${count} (${percentage.toFixed(1)}%)</span>
+                        </div>
+                        <div class="rating-fill" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                container.innerHTML += barHtml;
+            }
+        }
+
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviewsContainer');
+            
+            if (reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <h4>No reviews yet</h4>
+                        <p class="text-muted">Be the first to share your experience!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = reviews.map(review => `
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="mb-1">${review.user_name}</h6>
+                            <div class="star-rating">
+                                ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}
+                            </div>
+                        </div>
+                        <div class="text-muted">
+                            <small>${new Date(review.created_at).toLocaleDateString()}</small>
+                            ${review.verified_traveler ? '<br><small class="text-success"><i class="fas fa-check-circle"></i> Verified Traveler</small>' : ''}
+                        </div>
+                    </div>
+                    <p class="mb-3">${review.comment}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-sm btn-outline-primary" onclick="voteReview(${review.destination_id}, ${review.id})">
+                            <i class="fas fa-thumbs-up me-1"></i>Helpful (${review.helpful_votes})
+                        </button>
+                        <small class="text-muted">Destination ID: ${review.destination_id}</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadDestinations() {
+            try {
+                const response = await fetch('/api/destinations?per_page=50');
+                const data = await response.json();
+                
+                const reviewDestination = document.getElementById('reviewDestination');
+                
+                data.destinations.forEach(dest => {
+                    const option = `<option value="${dest.id}">${dest.name}, ${dest.country}</option>`;
+                    reviewDestination.innerHTML += option;
+                });
+            } catch (error) {
+                console.error('Error loading destinations:', error);
+            }
+        }
+
+        function loadCountries() {
+            const countries = [
+                'India', 'Indonesia', 'Switzerland', 'France', 'Japan', 'Greece', 
+                'USA', 'Peru', 'Australia', 'Jordan', 'Iceland', 'Tanzania', 
+                'Brazil', 'UAE', 'Morocco', 'Thailand'
+            ];
+            
+            const budgetCountry = document.getElementById('budgetCountry');
+            countries.forEach(country => {
+                budgetCountry.innerHTML += `<option value="${country}">${country}</option>`;
+            });
+        }
+
+        function setupFlightSearch() {
+            document.getElementById('flightSearchForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                searchFlights();
+            });
+        }
+
+        async function searchFlights() {
+            const fromCity = document.getElementById('fromCity').value;
+            const toCity = document.getElementById('toCity').value;
+            const departDate = document.getElementById('departDate').value;
+            const returnDate = document.getElementById('returnDate').value;
+            const passengers = document.getElementById('passengers').value;
+
+            if (!fromCity || !toCity || !departDate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/flights/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from_city: fromCity,
+                        to_city: toCity,
+                        depart_date: departDate,
+                        return_date: returnDate,
+                        passengers: parseInt(passengers)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayFlights(data.flights);
+                } else {
+                    alert('Failed to search flights');
+                }
+            } catch (error) {
+                console.error('Error searching flights:', error);
+                alert('Error searching flights');
+            }
+        }
+
+        function displayFlights(flights) {
+            const container = document.getElementById('flightResults');
+            
+            if (flights.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-plane fa-3x text-muted mb-3"></i>
+                        <h4>No flights found</h4>
+                        <p class="text-muted">Try different dates or routes</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = flights.map(flight => `
+                <div class="flight-card">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <div class="h4 mb-1">${flight.airline_logo}</div>
+                                <small class="text-muted">${flight.airline}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div><strong>${flight.departure_time}</strong></div>
+                            <small class="text-muted">${flight.departure_airport}</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div><strong>${flight.arrival_time}</strong></div>
+                            <small class="text-muted">${flight.arrival_airport}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div>${flight.duration}</div>
+                            <small class="text-muted">${flight.flight_type}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-success"><strong>$${flight.price}</strong></div>
+                            <small class="text-muted">${flight.available_seats} seats left</small>
+                            <button class="btn btn-primary btn-sm mt-2 w-100">
+                                <i class="fas fa-ticket-alt me-1"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function calculateBudget() {
+            const country = document.getElementById('budgetCountry').value;
+            const duration = parseInt(document.getElementById('budgetDuration').value);
+            const type = document.getElementById('budgetType').value;
+
+            if (!country) {
+                alert('Please select a country');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/budget/country/${country}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayBudget(data, duration, 2, type);
+                } else {
+                    alert('Failed to get budget information');
+                }
+            } catch (error) {
+                console.error('Error calculating budget:', error);
+                alert('Error calculating budget');
+            }
+        }
+
+        function displayBudget(budgetData, duration, groupSize, type) {
+            const budget = budgetData.budgets[type];
+            const container = document.getElementById('budgetResults');
+            
+            container.innerHTML = `
+                <div class="budget-card">
+                    <h4><i class="fas fa-calculator me-2"></i>Budget Estimate for ${budgetData.country}</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Currency:</strong> ${budgetData.currency}<br>
+                            <strong>Cost Level:</strong> ${budgetData.cost_level}<br>
+                            <strong>Duration:</strong> ${duration} days<br>
+                            <strong>Group Size:</strong> ${groupSize} people
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Accommodation Type:</strong> ${type}<br>
+                            <strong>Total Budget:</strong> ${budgetData.currency} ${budget.total}<br>
+                            <strong>Per Person:</strong> ${budgetData.currency} ${budget.per_person}
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6>Budget Breakdown</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-bed me-2"></i>Accommodation: ${budgetData.currency} ${budget.accommodation}</li>
+                                <li><i class="fas fa-utensils me-2"></i>Food: ${budgetData.currency} ${budget.food}</li>
+                                <li><i class="fas fa-car me-2"></i>Transport: ${budgetData.currency} ${budget.transport}</li>
+                                <li><i class="fas fa-hiking me-2"></i>Activities: ${budgetData.currency} ${budget.activities}</li>
+                                <li><i class="fas fa-plus me-2"></i>Additional: ${budgetData.currency} ${budget.additional}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>All Accommodation Types</h6>
+                            <div class="mb-2">
+                                <strong>Budget:</strong> ${budgetData.currency} ${budgetData.budgets.budget.total}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Mid-range:</strong> ${budgetData.currency} ${budgetData.budgets.mid.total}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Luxury:</strong> ${budgetData.currency} ${budgetData.budgets.luxury.total}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showAddReviewModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addReviewModal'));
+            modal.show();
+        }
+
+        function setStarRating(rating) {
+            document.getElementById('selectedRating').value = rating;
+            
+            document.querySelectorAll('.star-input').forEach((star, index) => {
+                if (index < rating) {
+                    star.style.color = '#ffc107';
+                } else {
+                    star.style.color = '#e9ecef';
+                }
+            });
+        }
+
+        async function submitReview() {
+            const destinationId = document.getElementById('reviewDestination').value;
+            const rating = document.getElementById('selectedRating').value;
+            const comment = document.getElementById('reviewComment').value;
+            const userName = document.getElementById('reviewerName').value;
+            const userEmail = document.getElementById('reviewerEmail').value;
+            
+            if (!destinationId || !comment || !userName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        destination_id: parseInt(destinationId),
+                        rating: parseInt(rating),
+                        comment: comment,
+                        user_name: userName,
+                        user_email: userEmail
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Review submitted successfully!');
+                    bootstrap.Modal.getInstance(document.getElementById('addReviewModal')).hide();
+                    document.getElementById('reviewForm').reset();
+                    loadReviewsAnalytics(); // Reload data
+                } else {
+                    alert('Error submitting review');
+                }
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                alert('Error submitting review');
+            }
+        }
+
+        async function voteReview(destinationId, reviewId) {
+            try {
+                const response = await fetch(`/api/reviews/${destinationId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        review_id: reviewId,
+                        vote_type: 'helpful'
+                    })
+                });
+                
+                if (response.ok) {
+                    // Reload reviews to show updated vote count
+                    loadAllReviews();
+                }
+            } catch (error) {
+                console.error('Error voting on review:', error);
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
+
+

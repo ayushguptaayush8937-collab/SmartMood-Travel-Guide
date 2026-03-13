@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Travel - AI-Powered Travel Recommendations</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#home">
+                <i class="fas fa-brain me-2"></i>Mood Travel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#mood-analyzer">Mood Analyzer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#destinations">Destinations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reviews"><i class="fas fa-star me-1"></i>Reviews</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/chatbot"><i class="fas fa-robot me-1"></i>Chatbot AI</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/bus_tours"><i class="fas fa-bus me-1"></i>Bus Tours</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/packing"><i class="fas fa-suitcase me-1"></i>Packing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/flight_booking"><i class="fas fa-plane me-1"></i>Flights</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/quiz"><i class="fas fa-question-circle me-1"></i>Daily Quiz</a>
+                    </li>
+                    <!-- Removed Shopping & More dropdown as per requirement to integrate into attractions page -->
+                </ul>
+                
+                <div class="d-flex">
+                    <div class="auth-buttons">
+                        <button class="btn btn-outline-light me-2" onclick="showLoginModal()">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </button>
+                        <button class="btn btn-primary" onclick="showRegisterModal()">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </button>
+                    </div>
+                    <div class="user-info" style="display: none;">
+                        <!-- User info will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold text-white mb-4">
+                        Discover Your Perfect Trip Based on Your Mood
+                    </h1>
+                    <p class="lead text-white-50 mb-4">
+                        Our AI analyzes your feelings and preferences to recommend the perfect destinations, 
+                        activities, and experiences tailored just for you.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-primary btn-lg" onclick="showMoodAnalyzer()">
+                            <i class="fas fa-brain me-2"></i>Analyze My Mood
+                        </button>
+                        <button class="btn btn-outline-light btn-lg" onclick="showDestinations()">
+                            <i class="fas fa-map-marked-alt me-2"></i>Explore Destinations
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Travel" class="img-fluid rounded-3 shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="display-5 fw-bold mb-3">Why Choose Mood Travel?</h2>
+                    <p class="lead text-muted">Experience the future of travel planning with AI-powered recommendations</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-brain fa-3x text-primary"></i>
+                        </div>
+                        <h4>AI Mood Analysis</h4>
+                        <p class="text-muted">Our advanced AI analyzes your mood and suggests perfect destinations that match your emotional state.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-map-marked-alt fa-3x text-success"></i>
+                        </div>
+                        <h4>Personalized Recommendations</h4>
+                        <p class="text-muted">Get tailored travel suggestions based on your mood, interests, budget, and travel style.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-calculator fa-3x text-warning"></i>
+                        </div>
+                        <h4>Budget Planning</h4>
+                        <p class="text-muted">Smart budget estimation and cost breakdown for accommodation, food, transport, and activities.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-suitcase fa-3x text-info"></i>
+                        </div>
+                        <h4>Packing Lists</h4>
+                        <p class="text-muted">AI-generated packing lists based on destination weather, activities, and trip duration.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-cloud-sun fa-3x text-primary"></i>
+                        </div>
+                        <h4>Weather Integration</h4>
+                        <p class="text-muted">Real-time weather data and forecasts to help you plan the perfect trip timing.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-users fa-3x text-success"></i>
+                        </div>
+                        <h4>Community Reviews</h4>
+                        <p class="text-muted">Read authentic reviews and ratings from fellow travelers to make informed decisions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Mood Analyzer Section -->
+    <section id="mood-analyzer" class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5 text-white">
+                        <h2 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-brain me-3"></i>How Are You Feeling Today?
+                        </h2>
+                        <p class="lead mb-0">Tell us about your mood and we'll recommend the perfect destinations for you</p>
+                        <div class="mood-emoji-container mt-4">
+                            <div class="mood-emoji active" data-mood="happy">
+                                <i class="fas fa-smile fa-2x"></i>
+                                <span>Happy</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="excited">
+                                <i class="fas fa-star fa-2x"></i>
+                                <span>Excited</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="relaxed">
+                                <i class="fas fa-leaf fa-2x"></i>
+                                <span>Relaxed</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="adventurous">
+                                <i class="fas fa-mountain fa-2x"></i>
+                                <span>Adventurous</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="romantic">
+                                <i class="fas fa-heart fa-2x"></i>
+                                <span>Romantic</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="curious">
+                                <i class="fas fa-search fa-2x"></i>
+                                <span>Curious</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="stressed">
+                                <i class="fas fa-cloud fa-2x"></i>
+                                <span>Stressed</span>
+                            </div>
+                            <div class="mood-emoji" data-mood="energetic">
+                                <i class="fas fa-bolt fa-2x"></i>
+                                <span>Energetic</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card shadow-lg border-0" style="border-radius: 20px; backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95);">
+                        <div class="card-body p-5">
+                            <form id="moodForm">
+                                <div class="mb-4">
+                                    <label for="moodText" class="form-label fw-bold text-primary">
+                                        <i class="fas fa-pen-fancy me-2"></i>Describe your current mood:
+                                    </label>
+                                    <textarea class="form-control form-control-lg" id="moodText" rows="4" 
+                                              placeholder="I'm feeling excited and adventurous today... Let me tell you more about how I feel..."
+                                              style="border-radius: 15px; border: 2px solid #e9ecef; transition: all 0.3s ease;"></textarea>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-primary">
+                                        <i class="fas fa-mouse-pointer me-2"></i>Or select your mood:
+                                    </label>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="happy">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-smile text-warning"></i>
+                                                </div>
+                                                <div class="mood-label">Happy</div>
+                                                <input type="radio" name="moodSelect" value="happy" id="moodHappy" class="mood-radio">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="relaxed">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-leaf text-success"></i>
+                                                </div>
+                                                <div class="mood-label">Relaxed</div>
+                                                <input type="radio" name="moodSelect" value="relaxed" id="moodRelaxed" class="mood-radio">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="adventurous">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-mountain text-primary"></i>
+                                                </div>
+                                                <div class="mood-label">Adventurous</div>
+                                                <input type="radio" name="moodSelect" value="adventurous" id="moodAdventurous" class="mood-radio">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="romantic">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-heart text-danger"></i>
+                                                </div>
+                                                <div class="mood-label">Romantic</div>
+                                                <input type="radio" name="moodSelect" value="romantic" id="moodRomantic" class="mood-radio">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="stressed">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-cloud text-secondary"></i>
+                                                </div>
+                                                <div class="mood-label">Stressed</div>
+                                                <input type="radio" name="moodSelect" value="stressed" id="moodStressed" class="mood-radio">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mood-option-card" data-mood="energetic">
+                                                <div class="mood-icon">
+                                                    <i class="fas fa-bolt text-warning"></i>
+                                                </div>
+                                                <div class="mood-label">Energetic</div>
+                                                <input type="radio" name="moodSelect" value="energetic" id="moodEnergetic" class="mood-radio">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-primary btn-lg me-3 px-5 py-3" 
+                                            style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                        <i class="fas fa-brain me-2"></i>Analyze My Mood
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-lg px-5 py-3" 
+                                            onclick="startFaceRecognition()"
+                                            style="border-radius: 25px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                        <i class="fas fa-camera me-2"></i>Face Recognition
+                                    </button>
+                                </div>
+                                
+                                <!-- Enhanced Face Recognition Section -->
+                                <div id="faceRecognitionSection" class="mt-5" style="display: none;">
+                                    <div class="card border-success border-3" style="border-radius: 20px; overflow: hidden;">
+                                        <div class="card-header bg-success text-white text-center py-3">
+                                            <h5 class="mb-0">
+                                                <i class="fas fa-camera me-2"></i>AI Face Recognition Mood Analysis
+                                            </h5>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6">
+                                                    <div class="video-container" style="border-radius: 15px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+                                                        <video id="video" width="100%" autoplay style="border-radius: 15px;"></video>
+                                                        <canvas id="canvas" style="display: none;"></canvas>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-grid gap-3">
+                                                        <button class="btn btn-outline-success btn-lg" onclick="capturePhoto()" 
+                                                                style="border-radius: 15px; font-weight: 600;">
+                                                            <i class="fas fa-camera me-2"></i>Capture Photo
+                                                        </button>
+                                                        <button class="btn btn-outline-danger btn-lg" onclick="stopFaceRecognition()"
+                                                                style="border-radius: 15px; font-weight: 600;">
+                                                            <i class="fas fa-stop me-2"></i>Stop Camera
+                                                        </button>
+                                                    </div>
+                                                    <div id="faceAnalysisResult" class="mt-4" style="display: none;">
+                                                        <div class="alert alert-info border-0" style="border-radius: 15px;">
+                                                            <h6 class="mb-2">
+                                                <i class="fas fa-brain me-2"></i>AI Analysis Result
+                                            </h6>
+                                            <div id="faceAnalysisContent">
+                                                <!-- Content will be populated by JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Enhanced Mood Analysis Result with Travel Recommendations -->
+                <div id="moodResult" class="mt-5" style="display: none;">
+                    <div class="card border-0" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 20px;">
+                        <div class="card-body p-4">
+                            <h5 class="card-title text-primary mb-3">
+                                <i class="fas fa-chart-line me-2"></i>Mood Analysis Result
+                            </h5>
+                            <div id="moodAnalysisContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Travel Recommendations Based on Mood -->
+                    <div id="travelRecommendations" class="mt-4" style="display: none;">
+                        <div class="card border-0" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 20px;">
+                            <div class="card-body p-4">
+                                <h5 class="card-title text-primary mb-3">
+                                    <i class="fas fa-plane me-2"></i>Travel Recommendations for Your Mood
+                                </h5>
+                                <div id="recommendationsContent">
+                                    <!-- Travel recommendations will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section id="recommendations" class="py-5 bg-light">
+        <div class="container">
+            <!-- Recommendations will be populated by JavaScript -->
+        </div>
+    </section>
+
+    <!-- Destinations Section -->
+    <section id="destinations" class="py-5">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="display-5 fw-bold mb-3">Explore Amazing Destinations</h2>
+                    <p class="lead text-muted">Discover handpicked destinations from around the world</p>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search destinations...">
+                        <button class="btn btn-primary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Country Filter -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-8">
+                    <div class="text-center">
+                        <h5 class="mb-3">Filter by Region:</h5>
+                        <div class="btn-group" role="group" id="countryFilter">
+                            <button type="button" class="btn btn-outline-primary active" data-country="all">All Countries</button>
+                            <button type="button" class="btn btn-outline-primary" data-country="Asia">Asia</button>
+                            <button type="button" class="btn btn-outline-primary" data-country="Europe">Europe</button>
+                            <button type="button" class="btn btn-outline-primary" data-country="Americas">Americas</button>
+                            <button type="button" class="btn btn-outline-primary" data-country="Africa">Africa</button>
+                            <button type="button" class="btn btn-outline-primary" data-country="Oceania">Oceania</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Destinations Grid -->
+            <div id="destinationsList">
+                <!-- Destinations will be populated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Festivals Section -->
+    <section id="festivals" class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h2 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-calendar-alt me-3"></i>Upcoming Festivals by Country
+                        </h2>
+                        <p class="lead mb-0">Discover cultural celebrations and events organized by country</p>
+                    </div>
+                    
+                    <div id="festivalsList">
+                        <!-- Festivals will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-primary btn-lg px-5 py-3" onclick="app.loadMoreFestivals()">
+                            <i class="fas fa-calendar-plus me-2"></i>View More Festivals
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h2 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-star me-3"></i>Traveler Reviews & Ratings
+                        </h2>
+                        <p class="lead mb-0">See what other travelers are saying about their experiences</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-user-circle fa-3x text-primary"></i>
+                                    </div>
+                                    <h5 class="card-title">Sarah M.</h5>
+                                    <div class="text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <p class="card-text text-muted">"Amazing experience! The mood-based recommendations were spot on. Bali was perfect for my relaxed state of mind."</p>
+                                    <small class="text-muted">Bali Paradise • 2 weeks ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-user-circle fa-3x text-success"></i>
+                                    </div>
+                                    <h5 class="card-title">Michael R.</h5>
+                                    <div class="text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <p class="card-text text-muted">"The hiking trails in Switzerland were incredible! Perfect for my adventurous mood. Highly recommend!"</p>
+                                    <small class="text-muted">Swiss Alps • 1 month ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-4 mb-4">
+                            <div class="card h-100 border-0 shadow-sm">
+                                <div class="card-body text-center p-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-user-circle fa-3x text-info"></i>
+                                    </div>
+                                    <h5 class="card-title">Emma L.</h5>
+                                    <div class="text-warning mb-2">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                    </div>
+                                    <p class="card-text text-muted">"Found the perfect romantic getaway in Paris. The mood analyzer really understood what I needed!"</p>
+                                    <small class="text-muted">Paris Romance • 3 weeks ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/reviews" class="btn btn-primary btn-lg px-5 py-3">
+                            <i class="fas fa-comments me-2"></i>View All Reviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-brain me-2"></i>Mood Travel</h5>
+                    <p class="text-muted">AI-powered travel recommendations based on your mood and preferences.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 Mood Travel. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm">
+                        <div class="mb-3">
+                            <label for="registerName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="registerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="registerEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="registerPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Destination Details Modal -->
+    <div class="modal fade" id="destinationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Destination Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="destinationModalBody">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html> 
+ 

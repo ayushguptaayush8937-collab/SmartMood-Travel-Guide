@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Travel Quiz - Mood Travel</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        .quiz-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 40vh;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        
+        .quiz-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .question-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .option-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .option-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+        
+        .option-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .points-display {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            color: #333;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .progress-bar-custom {
+            height: 10px;
+            border-radius: 10px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
+        
+        .quiz-complete {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .redeem-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .floating-points {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .timer-container { display: flex; justify-content: center; }
+        .timer-circle {
+            background: #ff6b6b;
+            color: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 16px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+        .timer-circle span { font-size: 1.25rem; font-weight: 700; }
+        .timer-circle small { font-size: 0.65rem; opacity: 0.9; }
+        @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+        .timer-warning { animation: shake 0.5s infinite; background: #dc3545 !important; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+        @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-brain me-2"></i>Mood Travel
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/quiz">Daily Quiz</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/flight_booking">Flight Booking</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Points Display -->
+    <div class="floating-points" id="floatingPoints">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-coins me-2" style="font-size: 1.2rem;"></i>
+            <div>
+                <div class="fw-bold" id="currentPoints">0</div>
+                <small>Points</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="quiz-hero">
+        <div class="container">
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-8">
+                    <h1 class="display-6 fw-bold mb-2">
+                        <i class="fas fa-question-circle me-2"></i>Daily Travel Quiz
+                    </h1>
+                    <p class="mb-3">Test your travel knowledge and earn points for flight discounts!</p>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <span class="badge bg-light text-dark">🎯 10 Questions Daily</span>
+                        <span class="badge bg-light text-dark">💰 1 Point Per Question</span>
+                        <span class="badge bg-light text-dark">✈️ Redeem for Flights</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Points Display -->
+    <section class="py-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="points-display">
+                        <h5 class="mb-3">
+                            <i class="fas fa-coins me-2"></i>Your Points Balance
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-primary" id="totalPoints">0</div>
+                                <small>Total Points</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-success" id="todayPoints">0</div>
+                                <small>Today's Points</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="h4 fw-bold text-warning" id="quizStreak">0</div>
+                                <small>Quiz Streak</small>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Redeem 10+ points for flight discounts.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Section -->
+    <section class="py-5" id="quizSection">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Start Quiz Intro -->
+                    <div class="quiz-card" id="quizIntro">
+                        <div class="card-body p-4 text-center">
+                            <h4 class="mb-2">Ready to begin?</h4>
+                            <p class="text-muted">You will have 10 seconds for each question. Earn 1 point per correct answer.</p>
+                            <button class="btn btn-primary btn-lg" id="startBtn">
+                                <i class="fas fa-play me-2"></i>Start Quiz
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Body -->
+                    <div id="quizBody" class="d-none">
+                        <!-- Quiz Progress -->
+                        <div class="text-center mb-4">
+                            <h5>Question <span id="currentQuestionNum">1</span> of <span id="totalQuestions">10</span></h5>
+                            <div class="progress-bar-custom w-100 mb-3">
+                                <div class="progress-fill" id="progressBar" style="width: 10%"></div>
+                            </div>
+                            <!-- Timer Display -->
+                            <div class="timer-container mb-3">
+                                <div class="timer-circle">
+                                    <span id="timerDisplay">10</span>
+                                    <small>seconds</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quiz Question -->
+                        <div class="quiz-card" id="questionCard">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="question-number me-3" id="questionNumber">1</div>
+                                    <h5 class="mb-0" id="questionText">Loading question...</h5>
+                                </div>
+                                
+                                <div id="optionsContainer">
+                                    <!-- Options will be loaded here -->
+                                </div>
+                                
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-primary px-4" id="nextBtn" disabled>
+                                        <i class="fas fa-arrow-right me-2"></i>Next
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Complete Section -->
+    <section class="py-5 d-none" id="quizCompleteSection">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="quiz-complete">
+                        <i class="fas fa-trophy fa-3x mb-3"></i>
+                        <h3 class="mb-3">Quiz Complete! 🎉</h3>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="h4 fw-bold" id="finalScore">0</div>
+                                <small>Correct</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h4 fw-bold" id="finalPoints">0</div>
+                                <small>Points</small>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="h4 fw-bold" id="finalPercentage">0%</div>
+                                <small>Success</small>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-light me-2" onclick="location.reload()">
+                                <i class="fas fa-redo me-1"></i>Come back tomorrow
+                            </button>
+                            <button class="btn btn-warning" onclick="showRedeemSection()">
+                                <i class="fas fa-gift me-1"></i>Redeem Points
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Redeem Points Section -->
+    <section class="py-5 d-none" id="redeemSection">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="redeem-section">
+                        <h4 class="mb-3">
+                            <i class="fas fa-gift me-2"></i>Redeem Your Points
+                        </h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="card bg-dark text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-plane fa-2x mb-2"></i>
+                                        <h6>Flight Discount</h6>
+                                        <p class="mb-2">1 Point = $1 Discount</p>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="redeemPoints" placeholder="Points to redeem" min="10">
+                                            <button class="btn btn-warning" onclick="redeemPoints()">Redeem</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-dark text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                        <h6>How It Works</h6>
+                                        <ul class="list-unstyled text-start small mb-0">
+                                            <li><i class="fas fa-check me-2"></i>1 point per correct answer</li>
+                                            <li><i class="fas fa-check me-2"></i>Minimum 10 points to redeem</li>
+                                            <li><i class="fas fa-check me-2"></i>Use discounts on flight bookings</li>
+                                            <li><i class="fas fa-check me-2"></i>One quiz per day</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-brain me-2"></i>Mood Travel</h5>
+                    <p class="text-muted">AI-powered travel recommendations based on your mood and preferences.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted">&copy; 2024 Mood Travel. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        let questionTimer;
+        let timeLeft = 10;
+        let quizStarted = false;
+
+        // Load quiz on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadQuizQuestions();
+            loadUserPoints();
+            document.getElementById('startBtn').addEventListener('click', startQuiz);
+        });
+
+        async function loadQuizQuestions() {
+            try {
+                const response = await fetch('/api/quiz/questions');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentQuestions = data.questions;
+                    // Do not display yet; wait for Start Quiz
+                } else {
+                    console.error('Error loading quiz questions:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading quiz questions:', error);
+            }
+        }
+
+        function startQuiz() {
+            if (quizStarted) return;
+            quizStarted = true;
+            // Reset state
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            timeLeft = 10;
+            // Toggle UI
+            document.getElementById('quizIntro').classList.add('d-none');
+            document.getElementById('quizBody').classList.remove('d-none');
+            // Render first question
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                completeQuiz();
+                return;
+            }
+
+            const question = currentQuestions[currentQuestionIndex];
+            
+            // Update progress
+            document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = currentQuestions.length;
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex + 1) / currentQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            
+            // Display options
+            const optionsContainer = document.getElementById('optionsContainer');
+            let optionsHtml = '';
+            
+            question.options.forEach((option, index) => {
+                optionsHtml += `
+                    <div class="option-card" onclick="selectOption(${index})" data-option="${index}">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-circle text-muted"></i>
+                            </div>
+                            <div>${option}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            optionsContainer.innerHTML = optionsHtml;
+            
+            // Reset next button
+            document.getElementById('nextBtn').disabled = true;
+            
+            // Start timer for this question
+            startTimer();
+        }
+        
+        function startTimer() {
+            timeLeft = 10;
+            updateTimerDisplay();
+            
+            const timerCircle = document.getElementById('timerDisplay').parentElement;
+            timerCircle.classList.remove('timer-warning');
+
+            // Clear any existing timer
+            if (questionTimer) {
+                clearInterval(questionTimer);
+            }
+            
+            questionTimer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 3) {
+                    timerCircle.classList.add('timer-warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(questionTimer);
+                    // Auto-submit current question if no answer selected
+                    if (userAnswers[currentQuestionIndex] === undefined) {
+                        const randomAnswer = Math.floor(Math.random() * 4);
+                        userAnswers[currentQuestionIndex] = {
+                            question_id: currentQuestions[currentQuestionIndex].id,
+                            selected_answer: randomAnswer
+                        };
+                    }
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const timerDisplay = document.getElementById('timerDisplay');
+            if (timerDisplay) {
+                timerDisplay.textContent = timeLeft;
+            }
+        }
+        
+        function stopTimer() {
+            if (questionTimer) {
+                clearInterval(questionTimer);
+            }
+        }
+        
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'];
+            const confettiCount = 100;
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.top = '-10px';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.borderRadius = '50%';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '9999';
+                confetti.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        function selectOption(optionIndex) {
+            // Remove previous selections
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Select current option
+            event.currentTarget.classList.add('selected');
+            
+            // Enable next button
+            document.getElementById('nextBtn').disabled = false;
+            
+            // Store answer
+            userAnswers[currentQuestionIndex] = {
+                question_id: currentQuestions[currentQuestionIndex].id,
+                selected_answer: optionIndex
+            };
+            
+            // Stop timer when option is selected
+            stopTimer();
+        }
+
+        function nextQuestion() {
+            // Stop current timer
+            stopTimer();
+            
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                completeQuiz();
+            }
+        }
+
+        async function completeQuiz() {
+            try {
+                const response = await fetch('/api/quiz/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        answers: userAnswers
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show results
+                    document.getElementById('finalScore').textContent = data.correct_answers;
+                    document.getElementById('finalPoints').textContent = data.points_earned;
+                    document.getElementById('finalPercentage').textContent = data.percentage + '%';
+                    
+                    // Update points display
+                    document.getElementById('totalPoints').textContent = data.total_points;
+                    document.getElementById('todayPoints').textContent = data.points_earned;
+                    document.getElementById('currentPoints').textContent = data.total_points;
+                    
+                    // Hide quiz section and show complete section
+                    document.getElementById('quizSection').classList.add('d-none');
+                    document.getElementById('quizCompleteSection').classList.remove('d-none');
+                    
+                    // Add celebration effect
+                    createConfetti();
+                    
+                } else {
+                    alert(data.error);
+                    if (data.error.includes('already taken')) {
+                        document.getElementById('quizSection').classList.add('d-none');
+                        document.getElementById('quizCompleteSection').classList.remove('d-none');
+                        document.getElementById('finalScore').textContent = '0';
+                        document.getElementById('finalPoints').textContent = '0';
+                        document.getElementById('finalPercentage').textContent = '0%';
+                    }
+                }
+            } catch (error) {
+                console.error('Error submitting quiz:', error);
+            }
+        }
+
+        async function loadUserPoints() {
+            try {
+                const response = await fetch(`/api/quiz/points/${userId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('totalPoints').textContent = data.points;
+                    document.getElementById('currentPoints').textContent = data.points;
+                    
+                    // Calculate quiz streak (mock)
+                    const streak = Math.floor(data.points / 5) + 1;
+                    document.getElementById('quizStreak').textContent = streak;
+                }
+            } catch (error) {
+                console.error('Error loading user points:', error);
+            }
+        }
+
+        function showRedeemSection() {
+            document.getElementById('redeemSection').classList.remove('d-none');
+        }
+
+        async function redeemPoints() {
+            const pointsToRedeem = parseInt(document.getElementById('redeemPoints').value);
+            
+            if (!pointsToRedeem || pointsToRedeem < 10) {
+                alert('Please enter at least 10 points to redeem.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/quiz/redeem-points', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        points: pointsToRedeem,
+                        type: 'flight_discount'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                    loadUserPoints(); // Refresh points display
+                    document.getElementById('redeemPoints').value = '';
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error('Error redeeming points:', error);
+            }
+        }
+
+        // Event listeners
+        document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+    </script>
+</body>
+</html>
+
+

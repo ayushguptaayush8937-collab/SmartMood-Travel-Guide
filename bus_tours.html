@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Tours - Local Sightseeing - Mood Travel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/"><i class="fas fa-globe-americas me-2"></i>Mood Travel</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Home</a>
+                <a class="nav-link" href="/reviews"><i class="fas fa-star me-1"></i>Reviews</a>
+                <a class="nav-link" href="/packing"><i class="fas fa-suitcase me-1"></i>Packing</a>
+                <a class="nav-link" href="#" onclick="goBack()"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section text-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3"><i class="fas fa-bus me-3"></i>Local Sightseeing Bus Tours</h1>
+            <p class="lead mb-4">Explore destinations with our comprehensive bus tour packages</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <!-- Country Selection -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h4><i class="fas fa-map-marker-alt me-2"></i>Select Country</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <select id="countrySelect" class="form-select mb-3">
+                                    <option value="">Choose a country...</option>
+                                    <option value="India">India</option>
+                                    <option value="Switzerland">Switzerland</option>
+                                    <option value="France">France</option>
+                                    <option value="Japan">Japan</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Italy">Italy</option>
+                                    <option value="Spain">Spain</option>
+                                    <option value="Thailand">Thailand</option>
+                                    <option value="Greece">Greece</option>
+                                    <option value="USA">USA</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" onclick="loadBusTours()">
+                                    <i class="fas fa-search me-1"></i>Find Bus Tours
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bus Tours Display -->
+        <div id="busToursContainer">
+            <div class="text-center py-5">
+                <i class="fas fa-bus fa-3x text-muted mb-3"></i>
+                <h4>Select a country to view available bus tours</h4>
+                <p class="text-muted">Choose from our curated selection of local sightseeing tours</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        async function loadBusTours() {
+            const country = document.getElementById('countrySelect').value;
+            if (!country) {
+                alert('Please select a country');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/sightseeing/bus-tours/${country}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayBusTours(data.bus_tours, country);
+                } else {
+                    showError('Failed to load bus tours');
+                }
+            } catch (error) {
+                console.error('Error loading bus tours:', error);
+                showError('An error occurred while loading bus tours');
+            }
+        }
+
+        function displayBusTours(tours, country) {
+            const container = document.getElementById('busToursContainer');
+            
+            if (tours.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-bus fa-3x text-muted mb-3"></i>
+                        <h4>No bus tours available for ${country}</h4>
+                        <p class="text-muted">Please check back later or contact us for custom tours</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <h3><i class="fas fa-route me-2"></i>Bus Tours in ${country}</h3>
+                        <p class="text-muted">Discover the best of ${country} with our guided bus tours</p>
+                    </div>
+                    ${tours.map(tour => `
+                        <div class="col-lg-6 col-xl-4 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-bus me-2"></i>${tour.name}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Duration</small>
+                                            <div><strong>${tour.duration}</strong></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Price</small>
+                                            <div class="text-success"><strong>${tour.price}</strong></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="card-text">${tour.description}</p>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Route:</small>
+                                        <div class="badge bg-light text-dark me-1">${tour.route.join(' → ')}</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Highlights:</small>
+                                        <div class="mt-1">
+                                            ${tour.highlights.map(highlight => 
+                                                `<span class="badge bg-info me-1 mb-1">${highlight}</span>`
+                                            ).join('')}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Accommodation</small>
+                                            <div><small>${tour.accommodation}</small></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Meals</small>
+                                            <div><small>${tour.meals}</small></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <div class="col-6">
+                                            <small class="text-muted">Transport</small>
+                                            <div><small>${tour.transport}</small></div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Group Size</small>
+                                            <div><small>${tour.group_size}</small></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Departure:</small>
+                                        <div><small>${tour.departure}</small></div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted">Guide:</small>
+                                        <div><small>${tour.guide}</small></div>
+                                    </div>
+                                    
+                                    <div class="accordion" id="tourDetails${tour.name.replace(/\s+/g, '')}">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${tour.name.replace(/\s+/g, '')}">
+                                                    Tour Details
+                                                </button>
+                                            </h2>
+                                            <div id="collapse${tour.name.replace(/\s+/g, '')}" class="accordion-collapse collapse">
+                                                <div class="accordion-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6>Included:</h6>
+                                                            <ul class="list-unstyled">
+                                                                ${tour.included.map(item => `<li><i class="fas fa-check text-success me-2"></i>${item}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6>Not Included:</h6>
+                                                            <ul class="list-unstyled">
+                                                                ${tour.not_included.map(item => `<li><i class="fas fa-times text-danger me-2"></i>${item}</li>`).join('')}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-primary w-100" onclick="bookTour('${tour.name}', '${tour.price}')">
+                                        <i class="fas fa-calendar-check me-1"></i>Book This Tour
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function bookTour(tourName, price) {
+            try {
+                // Parse numeric amount from price string like "$420" if present
+                const amount = typeof price === 'string' ? parseFloat(String(price).replace(/[^0-9.]/g, '')) : Number(price || 0);
+                const country = document.getElementById('countrySelect').value || '';
+                const payload = {
+                    user_id: 'anonymous',
+                    booking_type: 'bus_tour',
+                    total_amount: isNaN(amount) ? 0 : amount,
+                    currency: 'USD',
+                    booking_details: {
+                        name: tourName,
+                        price: price,
+                        country: country
+                    }
+                };
+                const resp = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (resp.ok) {
+                    alert(`Booking confirmed for ${tourName} (${price}). Booking ID: ${data.booking_id || 'created'}`);
+                } else {
+                    console.error('Booking error:', data);
+                    alert('Failed to create booking. Please try again.');
+                }
+            } catch (err) {
+                console.error('Booking error:', err);
+                alert('Failed to create booking. Please try again.');
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('busToursContainer');
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+
+
